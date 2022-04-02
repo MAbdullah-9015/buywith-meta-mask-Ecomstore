@@ -1,7 +1,9 @@
 from aiohttp import request
 from django.shortcuts import redirect, render
-from django.views.generic import View, TemplateView
+from django.urls import reverse_lazy
+from django.views.generic import View, TemplateView, CreateView
 from .models import *
+from .forms import *
 
 # Create your views here.
 
@@ -158,3 +160,34 @@ class EmptyCartView(View):
             cart.total = 0
             cart.save()
         return redirect("ecomapp:mycart")
+
+
+class CheckoutView(CreateView):
+    template_name = "checkout.html"
+    form_class = CheckoutForm
+    success_url = reverse_lazy("ecomapp:home")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        cart_id = self.request.session.get("cart_id", None)
+        if cart_id:
+            cart = Cart.objects.get(id=cart_id)
+        else:
+            cart = None
+        context["cart"] = cart
+        return context
+
+    def form_valid(self, form):
+        cart_id = self.request.session.get("cart_id")
+        if cart_id:
+            cart_obj = Cart.objects.get(id=cart_id)
+            form.instance.cart = cart_obj
+            form.instance.subtotal = cart_obj.total
+            form.instance.discount = 0
+            form.instance.total = cart_obj.total
+            form.instance.order_status = "Order Received"
+            del self.request.session["cart_id"]
+
+        else:
+            return redirect("ecomapp:home")
+        return super().form_valid(form)
