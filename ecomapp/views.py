@@ -1,9 +1,10 @@
 from aiohttp import request
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
-from django.views.generic import View, TemplateView, CreateView
+from django.views.generic import View, TemplateView, CreateView, FormView
 from .models import *
 from .forms import *
+from django.contrib.auth import authenticate, login, logout
 
 # Create your views here.
 
@@ -190,4 +191,49 @@ class CheckoutView(CreateView):
 
         else:
             return redirect("ecomapp:home")
+        return super().form_valid(form)
+
+
+class CustomerRegisterationView(CreateView):
+    template_name = "customerregisteration.html"
+    form_class = CustomerRegisterationForm
+    success_url = reverse_lazy("ecomapp:home")
+
+    def form_valid(self, form):
+        username = form.cleaned_data.get("username")
+        password = form.cleaned_data.get("password")
+        email = form.cleaned_data.get("email")
+
+        user = User.objects.create_user(
+            username=username, password=password, email=email
+        )
+        form.instance.user = user
+        login(self.request, user)
+        return super().form_valid(form)
+
+
+class CustomerLogoutView(View):
+    def get(self, request):
+        logout(request)
+        return redirect("ecomapp:home")
+
+
+class CustomerLoginView(FormView):
+    template_name = "customerlogin.html"
+    form_class = CustomerLoginForm
+    success_url = reverse_lazy("ecomapp:home")
+
+    def form_valid(self, form):
+        username = form.cleaned_data.get("username")
+        password = form.cleaned_data.get("password")
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            login(self.request, user)
+
+        else:
+            return render(
+                self.request,
+                "customerlogin.html",
+                {"form": CustomerLoginForm, "error": "Invalid Credentials"},
+            )
         return super().form_valid(form)
