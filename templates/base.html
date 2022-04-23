@@ -10,20 +10,26 @@
 </head>
 
 <body>
-    <a href="/">HOME</a>
-    <a href="/about/">about</a>
-    <a href="/contact/">Contact</a>
-    <a href="/all-products/">Categories</a>
-    <a href="{% url 'ecomapp:mycart'%}">View Cart</a>
-    {% if request.user.username%}
-    welcome! {{request.user.username}}
-    
-    {% else %}
-    <a href="{% url 'ecomapp:customerregisteration'%}">register</a>
-    <a href="{% url 'ecomapp:customerlogin'%}">login</a>
-    {% endif %}
-    <a href="{% url 'ecomapp:customerlogout'%}">logout</a>
-    
+    <div class="container">
+        <a href="/">HOME</a>
+        <a href="/about/">about</a>
+        <a href="/contact/">Contact</a>
+        <a href="/all-products/">Categories</a>
+        <a href="{% url 'ecomapp:mycart'%}">View Cart</a>
+        {% if request.user.username%}
+        welcome! {{request.user.username}}
+        <a href="{% url 'ecomapp:customerprofile'%}">My Profile</a>
+        <a href="{% url 'ecomapp:customerlogout'%}">logout</a>
+        {% else %}
+        <a href="{% url 'ecomapp:customerregisteration'%}">register</a>
+        <a href="{% url 'ecomapp:customerlogin'%}">login</a>
+
+
+        {% endif %}
+    </div>
+    <hr>
+
+
     {% block content %}
     {% endblock %}
 </body>

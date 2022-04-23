@@ -239,6 +239,27 @@ class CustomerRegisterationView(CreateView):
             return self.success_url
 
 
+class CustomerProfileView(TemplateView):
+    template_name = "customerprofile.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        customer = self.request.user.customer
+        context["customer"] = customer
+        orders = Order.objects.filter(cart__customer=customer)
+        context["orders"] = orders
+        return context
+
+    def dispatch(self, request, *args, **kwargs):
+
+        if request.user.is_authenticated and request.user.customer:
+            print("user is authenticated")
+            pass
+        else:
+            return redirect("/login/?next=/profile/")
+        return super().dispatch(request, *args, **kwargs)
+
+
 class CustomerLogoutView(View):
     def get(self, request):
         logout(request)

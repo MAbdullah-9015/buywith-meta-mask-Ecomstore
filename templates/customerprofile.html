@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{%block title%}My Profile{%endblock%}
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-4">
+            <h3>Detail information </h3>
+            <hr>
+            <p><span>Name: </span>{{customer.full_name}}</p>
+            <p><span>username: </span>{{customer.user.username}}</p>
+            <p><span>email: </span>{{customer.user.email}}</p>
+            <p><span>address: </span>{{customer.address}}</p>
+            <p><span>Joined on: </span>{{customer.joined_on}}</p>
+        </div>
+        <div class="col-md-8">
+
+            <h3>Previous orders</h3>
+            <hr>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>
+                            SN
+                        </th>
+                        <th>
+                            ORDER ID
+                        </th>
+                        <th>
+                            Amount
+                        </th>
+                        <th>
+                            ORDERED ON
+                        </th>
+                        <th>
+                            STATUS
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>
+                            {{forloop.counter}}
+                        </td>
+                        <td>
+                            {{order.id}}
+                        </td>
+                        <td>
+                            {{order.total}}
+                        </td>
+                        <td>
+                            {{order.created_at}}
+                        </td>
+                        <td>
+                            {{order.order_status}}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
