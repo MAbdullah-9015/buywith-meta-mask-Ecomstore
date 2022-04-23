@@ -12,14 +12,14 @@
 
                 {% csrf_token %}
                 {{form.as_p}}
-                <button class="btn btn-info"> Register As a Customer </button>
+                <button class="btn btn-info"> Login  As a Customer </button>
                 {% if error %}
                 <div class="alert alert-danger">
                     {{error}}
                 </div>
                 {% endif %}
             </form>
-
+            <p> or dont have account<a href="{% url 'ecomapp:customerregisteration'%}{% if request.GET.next%}?next={{request.GET.next}}{% endif%}">Register</a></p>
         </div>
 
     </div>

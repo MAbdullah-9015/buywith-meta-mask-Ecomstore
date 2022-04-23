@@ -9,7 +9,18 @@ from django.contrib.auth import authenticate, login, logout
 # Create your views here.
 
 
-class HomeView(TemplateView):
+class Ecommixin(object):
+    def dispatch(self, request, *args, **kwargs):
+        cart_id = request.session.get("cart_id")
+        if cart_id:
+            cart_obj = Cart.objects.get(id=cart_id)
+            if request.user.is_authenticated and request.user.customer:
+                cart_obj.customer = request.user.customer
+                cart_obj.save()
+        return super().dispatch(request, *args, **kwargs)
+
+
+class HomeView(Ecommixin, TemplateView):
     template_name = "home.html"
 
     def get_context_data(self, **kwargs):
@@ -20,15 +31,15 @@ class HomeView(TemplateView):
         return context
 
 
-class AboutView(TemplateView):
+class AboutView(Ecommixin, TemplateView):
     template_name = "about.html"
 
 
-class ContactView(TemplateView):
+class ContactView(Ecommixin, TemplateView):
     template_name = "contact.html"
 
 
-class AllProductView(TemplateView):
+class AllProductView(Ecommixin, TemplateView):
     template_name = "allproduct.html"
 
     def get_context_data(self, **kwargs):
@@ -37,7 +48,7 @@ class AllProductView(TemplateView):
         return context
 
 
-class ProductDetailView(TemplateView):
+class ProductDetailView(Ecommixin, TemplateView):
     template_name = "productdetail.html"
 
     def get_context_data(self, **kwargs):
@@ -50,7 +61,7 @@ class ProductDetailView(TemplateView):
         return context
 
 
-class AddToCartView(TemplateView):
+class AddToCartView(Ecommixin, TemplateView):
     template_name = "addtocat.html"
 
     def get_context_data(self, **kwargs):
@@ -100,7 +111,7 @@ class AddToCartView(TemplateView):
         return context
 
 
-class MyCartView(TemplateView):
+class MyCartView(Ecommixin, TemplateView):
     template_name = "mycart.html"
 
     def get_context_data(self, **kwargs):
@@ -114,7 +125,7 @@ class MyCartView(TemplateView):
         return context
 
 
-class ManageCartView(View):
+class ManageCartView(Ecommixin, View):
     def get(self, request, *args, **kwargs):
         cp_id = self.kwargs["cp_id"]
         action = request.GET.get("action")
@@ -151,7 +162,7 @@ class ManageCartView(View):
         return redirect("ecomapp:mycart")
 
 
-class EmptyCartView(View):
+class EmptyCartView(Ecommixin, View):
     def get(self, requesr, *args, **kwargs):
         cart_id = self.request.session.get("cart_id", None)
         print(cart_id, "cart_id")
@@ -163,10 +174,19 @@ class EmptyCartView(View):
         return redirect("ecomapp:mycart")
 
 
-class CheckoutView(CreateView):
+class CheckoutView(Ecommixin, CreateView):
     template_name = "checkout.html"
     form_class = CheckoutForm
     success_url = reverse_lazy("ecomapp:home")
+    # Muhammad Asad
+    def dispatch(self, request, *args, **kwargs):
+
+        if request.user.is_authenticated and request.user.customer:
+            print("user is authenticated")
+            pass
+        else:
+            return redirect("/login/?next=/checkout/")
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -211,6 +231,13 @@ class CustomerRegisterationView(CreateView):
         login(self.request, user)
         return super().form_valid(form)
 
+    def get_success_url(self):
+        if "next" in self.request.GET:
+            next_url = self.request.GET.get("next")
+            return next_url
+        else:
+            return self.success_url
+
 
 class CustomerLogoutView(View):
     def get(self, request):
@@ -237,3 +264,10 @@ class CustomerLoginView(FormView):
                 {"form": CustomerLoginForm, "error": "Invalid Credentials"},
             )
         return super().form_valid(form)
+
+    def get_success_url(self):
+        if "next" in self.request.GET:
+            next_url = self.request.GET.get("next")
+            return next_url
+        else:
+            return self.success_url
