@@ -1,7 +1,7 @@
 from aiohttp import request
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
-from django.views.generic import View, TemplateView, CreateView, FormView
+from django.views.generic import View, TemplateView, CreateView, FormView, DetailView
 from .models import *
 from .forms import *
 from django.contrib.auth import authenticate, login, logout
@@ -239,6 +239,28 @@ class CustomerRegisterationView(CreateView):
             return self.success_url
 
 
+class CustomerOrderDetailView(DetailView):
+    template_name = "customerorderdetail.html"
+    model = Order
+    context_object_name = "ord_obj"
+
+    def dispatch(self, request, *args, **kwargs):
+
+        if request.user.is_authenticated and request.user.customer:
+            print("user is authenticated")
+            order_id = self.kwargs["pk"]
+            try:
+                order = Order.objects.get(id=order_id)
+                if request.user.customer != order.cart.customer:
+                    return redirect("ecomapp:customerprofile")
+            except:
+                return redirect("ecomapp:customerprofile")
+
+        else:
+            return redirect("/login/?next=/profile/")
+        return super().dispatch(request, *args, **kwargs)
+
+
 class CustomerProfileView(TemplateView):
     template_name = "customerprofile.html"
 
@@ -246,7 +268,7 @@ class CustomerProfileView(TemplateView):
         context = super().get_context_data(**kwargs)
         customer = self.request.user.customer
         context["customer"] = customer
-        orders = Order.objects.filter(cart__customer=customer)
+        orders = Order.objects.filter(cart__customer=customer).order_by("-id")
         context["orders"] = orders
         return context
 
