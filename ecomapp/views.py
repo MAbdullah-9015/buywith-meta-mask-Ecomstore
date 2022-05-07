@@ -40,6 +40,9 @@ class ContactView(Ecommixin, TemplateView):
     template_name = "contact.html"
 
 
+# muhammad asad akmal
+
+
 class AllProductView(Ecommixin, TemplateView):
     template_name = "allproduct.html"
 
