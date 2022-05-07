@@ -6,6 +6,7 @@ from .models import *
 from .forms import *
 from django.contrib.auth import authenticate, login, logout
 from django.db.models import Q
+from django.core.paginator import Paginator
 
 # Create your views here.
 
@@ -26,9 +27,17 @@ class HomeView(Ecommixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["title"] = "Home"
-        context["allproducts"] = Product.objects.all().order_by("-id")
-        context["allcategories"] = Category.objects.all()
+        # context["title"] = "Home"
+        allproducts = Product.objects.all().order_by("-id")
+
+        paginator = Paginator(allproducts, 8)
+        page_number = self.request.GET.get("page")
+        product_list = paginator.get_page(page_number)
+        print(product_list)
+        print(page_number)
+        # context["allcategories"] = Category.objects.all()
+        context["product_list"] = product_list
+
         return context
 
 
@@ -38,9 +47,6 @@ class AboutView(Ecommixin, TemplateView):
 
 class ContactView(Ecommixin, TemplateView):
     template_name = "contact.html"
-
-
-# muhammad asad akmal
 
 
 class AllProductView(Ecommixin, TemplateView):
