@@ -24,4 +24,5 @@ urlpatterns = [
         CustomerOrderDetailView.as_view(),
         name="customerorderdetail",
     ),
+    path("search/", SearchView.as_view(), name="search"),
 ]
