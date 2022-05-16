@@ -1,12 +1,13 @@
-from aiohttp import request
 from django.shortcuts import redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.views.generic import View, TemplateView, CreateView, FormView, DetailView
 from .models import *
 from .forms import *
 from django.contrib.auth import authenticate, login, logout
 from django.db.models import Q
 from django.core.paginator import Paginator
+from django.conf import settings
+from coinbase_commerce.client import Client
 
 # Create your views here.
 
@@ -33,8 +34,8 @@ class HomeView(Ecommixin, TemplateView):
         paginator = Paginator(allproducts, 8)
         page_number = self.request.GET.get("page")
         product_list = paginator.get_page(page_number)
-        print(product_list)
-        print(page_number)
+        # print(product_list)
+        # print(page_number)
         # context["allcategories"] = Category.objects.all()
         context["product_list"] = product_list
 
@@ -192,7 +193,7 @@ class CheckoutView(Ecommixin, CreateView):
     def dispatch(self, request, *args, **kwargs):
 
         if request.user.is_authenticated and request.user.customer:
-            print("user is authenticated")
+            # print("user is authenticated")
             pass
         else:
             return redirect("/login/?next=/checkout/")
@@ -218,10 +219,43 @@ class CheckoutView(Ecommixin, CreateView):
             form.instance.total = cart_obj.total
             form.instance.order_status = "Order Received"
             del self.request.session["cart_id"]
-
+            pm = form.cleaned_data.get("payment_method")
+            print("Payment method is " + str(pm))
+            print("line no 222")
+            order = form.save()
+            print(order.id, "order id")
+            if pm == "CrytoCurrency":
+                return redirect(
+                    reverse("ecomapp:cryptopayment") + "?o_id=" + str(order.id)
+                )
         else:
             return redirect("ecomapp:home")
         return super().form_valid(form)
+
+
+class CryptoPaymentView(View):
+    def get(self, request, *args, **kwargs):
+        client = Client(api_key=settings.COINBASE_COMMERCE_API_KEY)
+        o_id = self.request.GET.get("o_id")
+        print(o_id)
+        order = Order.objects.get(id=o_id)
+        domain_url = "http://localhost:8000/"
+        product = {
+            "name": "Order_" + str(order.id),
+            "local_price": {"amount": order.total, "currency": "USD"},
+            "pricing_type": "fixed_price",
+            "redirect_url": domain_url,
+            "cancel_url": domain_url + "checkout/",
+        }
+        charge = client.charge.create(**product)
+
+        return render(
+            request,
+            "cryptopayment.html",
+            {
+                "charge": charge,
+            },
+        )
 
 
 class CustomerRegisterationView(CreateView):
@@ -285,7 +319,7 @@ class CustomerProfileView(TemplateView):
     def dispatch(self, request, *args, **kwargs):
 
         if request.user.is_authenticated and request.user.customer:
-            print("user is authenticated")
+            # print("user is authenticated")
             pass
         else:
             return redirect("/login/?next=/profile/")
@@ -337,7 +371,7 @@ class SearchView(TemplateView):
             | Q(discription__icontains=kw)
             | Q(return_policy__icontains=kw)
         )
-        print(results)
+        # print(results)
         # print(kw)
         context["results"] = results
         return context

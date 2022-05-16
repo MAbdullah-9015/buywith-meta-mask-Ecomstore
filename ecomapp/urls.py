@@ -13,6 +13,7 @@ urlpatterns = [
     path("manage-cart/<int:cp_id>/", ManageCartView.as_view(), name="managecart"),
     path("empty-cart/", EmptyCartView.as_view(), name="emptycart"),
     path("checkout/", CheckoutView.as_view(), name="checkout"),
+    path("crypto-payment/", CryptoPaymentView.as_view(), name="cryptopayment"),
     path(
         "register/", CustomerRegisterationView.as_view(), name="customerregisteration"
     ),

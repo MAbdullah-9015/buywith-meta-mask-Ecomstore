@@ -73,6 +73,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "bwmmecom.wsgi.application"
 
+COINBASE_COMMERCE_API_KEY = "8fe82d65-36e9-44d1-a812-421f181e160d"
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases

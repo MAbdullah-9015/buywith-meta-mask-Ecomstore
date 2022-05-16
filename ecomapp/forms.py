@@ -7,7 +7,7 @@ from django.contrib.auth import authenticate, login, logout
 class CheckoutForm(forms.ModelForm):
     class Meta:
         model = Order
-        fields = ["order_by", "shipping_address", "mobile", "email"]
+        fields = ["order_by", "shipping_address", "mobile", "email", "payment_method"]
 
 
 class CustomerRegisterationForm(forms.ModelForm):
